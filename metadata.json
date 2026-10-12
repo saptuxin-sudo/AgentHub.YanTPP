@@ -1,0 +1,8 @@
+{
+  "name": "AgentHub | Vault, Launchpad & Token Monitor",
+  "description": "Единый дашборд для безопасного хранения API ключей, мониторинга баланса токенов в реальном времени, графического запуска и совместного использования AI-агентов.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
