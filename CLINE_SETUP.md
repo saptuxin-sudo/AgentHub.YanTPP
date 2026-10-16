@@ -81,6 +81,59 @@ Cline читает `.clinerules/` (файл или каталог с `.md`), `AG
 vite 8 требует `esbuild ^0.27 || ^0.28`, из-за чего `npm install` падал с ошибкой `ERESOLVE`.
 В коде `esbuild` не используется, на сборку это не влияет.
 
+## Провайдеры и модели Google
+
+### Что работает без настройки
+
+- Провайдер по умолчанию — `cline` (Cline Cloud). Ключ не нужен: доступ выдаёт платформа.
+- В каталоге провайдера `cline` 466 моделей, из них **46 — Google**: `google/gemini-3.8-flash`, `google/gemini-4-argon`,
+  `google/gemini-3.5-flash`, `google/gemini-3.5-flash-lite`, `google/gemini-nano-banana-2.1` и другие
+  (список: `GET https://api.cline.bot/api/v1/ai/cline/models`).
+- Проверено вживую: сессии с `google/gemini-3.8-flash` и `google/gemini-4-argon` ответили за 2 и 4 секунды.
+
+### Почему не работает «свой ключ Google»
+
+Провайдер `gemini` берёт ключ из `data/settings/providers.json` либо из переменных окружения
+(`GEMINI_API_KEY`, `GOOGLE_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`). В этом окружении файла нет и переменные не заданы,
+поэтому запрос падает:
+
+- пустой ключ — `Google Generative AI API key is missing. Pass it using the 'apiKey' parameter or the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`
+- неверный ключ — `API key not valid. Please pass a valid API key.`
+
+Ключи, введённые в веб-интерфейсе, в песочницу не передаются: в файле сессии
+(`data/sessions/<id>/<id>.json`) и в его `metadata` есть только `provider` и `model`, полей с ключами нет.
+
+### Как подключить свой ключ Google
+
+Создать `/home/node/.cline/data/settings/providers.json` (он же `/workspace/.cline-home/data/settings/providers.json`):
+
+```json
+{
+  "version": 1,
+  "lastUsedProvider": "gemini",
+  "modes": {},
+  "providers": {
+    "gemini": {
+      "settings": {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash",
+        "apiKey": "<ключ из Google AI Studio>"
+      },
+      "updatedAt": "2026-10-16T00:00:00.000Z",
+      "tokenSource": "manual"
+    }
+  }
+}
+```
+
+Схема проверена через `StoredProviderSettingsSchema` — валидна. Ключ не коммитить: файл лежит в `.cline-home`,
+который исключён из git через `.git/info/exclude`.
+
+### Смена модели
+
+Модель фиксируется при старте сессии: переключение модели в интерфейсе не влияет на уже открытую сессию —
+нужно начать новую.
+
 ## Как проверить конфигурацию
 
 ```bash
