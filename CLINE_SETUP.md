@@ -129,6 +129,33 @@ vite 8 требует `esbuild ^0.27 || ^0.28`, из-за чего `npm install`
 Схема проверена через `StoredProviderSettingsSchema` — валидна. Ключ не коммитить: файл лежит в `.cline-home`,
 который исключён из git через `.git/info/exclude`.
 
+Готовая команда (запускать в терминале песочницы): ключ вводится скрытно, в историю команд не попадает,
+права на файл выставляются `600`. Сценарий проверен — файл проходит валидацию схемой Cline.
+
+```bash
+mkdir -p /home/node/.cline/data/settings
+read -rsp "Вставьте ключ Google AI Studio и нажмите Enter: " GK; echo
+cat > /home/node/.cline/data/settings/providers.json <<JSON
+{
+  "version": 1,
+  "lastUsedProvider": "gemini",
+  "modes": {},
+  "providers": {
+    "gemini": {
+      "settings": { "provider": "gemini", "model": "gemini-3.8-flash", "apiKey": "$GK" },
+      "updatedAt": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)",
+      "tokenSource": "manual"
+    }
+  }
+}
+JSON
+chmod 600 /home/node/.cline/data/settings/providers.json
+unset GK
+echo "Готово: ключ сохранён в providers.json"
+```
+
+После этого нужна сессия с провайдером `gemini` — новая или переключённая командой `session.update_connection`.
+
 ### Смена модели
 
 Модель фиксируется при старте сессии: переключение модели в интерфейсе не влияет на уже открытую сессию —
